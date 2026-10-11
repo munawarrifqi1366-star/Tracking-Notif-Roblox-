@@ -1,13 +1,14 @@
 import requests
 import time
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
 # --- KONFIGURASI ---
 TELEGRAM_BOT_TOKEN = "7955453002:AAFvmfj9oWPaVfm1weNz1C1m-dzbxwioEJs"
 TELEGRAM_CHAT_ID = "7376896906"
-ROBLOX_USER_ID = 9465641652  # Ganti dengan User ID target
+ROBLOX_USER_ID = 9465641652  # User ID target
 CHECK_INTERVAL = 60  # Cek setiap 60 detik
 
-# Mapping status Roblox
 STATUS_MAP = {
     0: "Offline",
     1: "Online di Website",
@@ -38,11 +39,9 @@ def check_roblox_status():
             user_data = data["userPresences"][0]
             current_status = user_data.get("userPresenceType", 0)
             
-            # Jika status berubah dari sebelumnya
             if last_status is not None and current_status != last_status:
                 status_text = STATUS_MAP.get(current_status, "Unknown")
                 
-                # Kirim notifikasi hanya jika berubah jadi Online/In-Game
                 if current_status in [1, 2]:
                     game_info = ""
                     if current_status == 2 and "lastLocation" in user_data:
@@ -57,7 +56,21 @@ def check_roblox_status():
     except Exception as e:
         print(f"Error fetch API: {e}")
 
-print("Bot pemantau Roblox aktif...")
-while True:
-    check_roblox_status()
-    time.sleep(CHECK_INTERVAL)
+def run_tracker():
+    print("Bot pemantau Roblox aktif...")
+    while True:
+        check_roblox_status()
+        time.sleep(CHECK_INTERVAL)
+
+# Menjalankan pemantau di background thread
+threading.Thread(target=run_tracker, daemon=True).start()
+
+# Fake Web Server untuk syarat Web Service gratis di Render
+class SimpleHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Roblox Tracker Running!")
+
+server = HTTPServer(('0.0.0.0', 10000), SimpleHandler)
+server.serve_forever()
