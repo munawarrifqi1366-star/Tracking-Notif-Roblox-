@@ -90,11 +90,11 @@ def check_roblox_status():
                 elif status == 2:
                     current_map = new_map
                     current_server_id = new_server_id
-                    srv_display = f"\n🆔 **Server ID:** `{new_server_id}`" if new_server_id != "Tidak diketahui" else ""
                     
-                    msg = (f"🎮 **TARGET SEDANG BERMAIN!**\n"
-                           f"📍 **Map:** `{new_map}`"
-                           f"{srv_display}")
+                    msg = (f"🚨 **TARGET UPDATE STATUS!**\n"
+                           f"Status: Sedang Bermain Game 🎮\n"
+                           f"📍 Masuk ke map: `{new_map}`\n"
+                           f"ID: `{new_server_id}`")
                     send_telegram_msg(msg)
 
                 # Jika Target ONLINE biasa (Website / Studio)
@@ -127,4 +127,3 @@ class SimpleHandler(BaseHTTPRequestHandler):
 
 server = HTTPServer(('0.0.0.0', 10000), SimpleHandler)
 server.serve_forever()
-                
